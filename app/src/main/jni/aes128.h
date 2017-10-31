@@ -22,11 +22,9 @@ JNIEXPORT jbyteArray JNICALL
 Java_cn_zkteco_jnidemo_AES128_aes128_1ecb_1decrypt(JNIEnv *env, jclass type, jbyteArray password_,
                                                    jint password_len, jbyteArray key_);
 
-unsigned char *
-AES128_ECB_encrypt(unsigned char *original, unsigned int original_len, unsigned char *key);
+void AES128_ECB_encrypt(unsigned char *original, unsigned int original_len, unsigned char *key, unsigned char *password);
 
-unsigned char *
-AES128_ECB_decrypt(unsigned char *password, unsigned int password_len, unsigned char *key);
+void AES128_ECB_decrypt(unsigned char *password, unsigned int password_len, unsigned char *key,unsigned char *original);
 
 void ECB_decrypt(const unsigned char *input, const unsigned char *key, unsigned char *output);
 

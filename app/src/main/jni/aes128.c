@@ -1,7 +1,8 @@
 #include <jni.h>
 #include <stdio.h>
 #include <string.h>
-
+//#include <memory.h>
+#include <stdlib.h>
 #include "aes128.h"
 
 #define Nb 4
@@ -95,7 +96,7 @@ Java_cn_zkteco_jnidemo_AES128_getStringFromC(JNIEnv *env, jclass type) {
 
     // TODO
 
-    return (*env)->NewStringUTF(env, "ohny shit！");
+    return (*env)->NewStringUTF(env, "oh,shit！");
 }
 
 JNIEXPORT jbyteArray JNICALL
@@ -107,15 +108,31 @@ Java_cn_zkteco_jnidemo_AES128_aes128_1ecb_1encrypt(JNIEnv *env, jclass type, jby
 
     // TODO
 
-    unsigned char *a = AES128_ECB_encrypt(original, originalLen, key);
+    unsigned char *inputO = (unsigned char *) malloc(originalLen);
+    unsigned char *inputK = (unsigned char *) malloc(16); //秘钥长度
 
+    unsigned char *password = (unsigned char *) malloc(originalLen);
+
+    memset(inputO, 0, originalLen);
+    memcpy(inputO, original, originalLen);
+
+    memset(inputK, 0, 16);
+    memcpy(inputK, key, 16);
+
+    AES128_ECB_encrypt(inputO, originalLen, inputK,password);
+
+    (*env)->ReleaseByteArrayElements(env, original_, (jbyte *) original, JNI_ABORT);
+    (*env)->ReleaseByteArrayElements(env, key_, (jbyte *) key, JNI_ABORT);
+
+    //设置返回变量
     jbyteArray jb = (*env)->NewByteArray(env, originalLen);
-    (*env)->SetByteArrayRegion(env, jb, 0, originalLen, (const jbyte *) a);
+    (*env)->SetByteArrayRegion(env, jb, 0, originalLen, (jbyte*) password);
 
-    (*env)->ReleaseByteArrayElements(env, original_, (jbyte *) original, 0);
-    (*env)->ReleaseByteArrayElements(env, key_, (jbyte *) key, 0);
 
     return jb;
+
+
+
 }
 
 
@@ -126,35 +143,35 @@ Java_cn_zkteco_jnidemo_AES128_aes128_1ecb_1decrypt(JNIEnv *env, jclass type, jby
     unsigned int passwordLen = (unsigned int) password_len;
     unsigned char *key = (unsigned char *) (*env)->GetByteArrayElements(env, key_, NULL);
 
+    unsigned char *original = (unsigned char *) malloc(passwordLen);
     // TODO
 
-    unsigned char *b = AES128_ECB_decrypt(password, passwordLen, key);
+    AES128_ECB_decrypt(password, passwordLen, key,original);
 
     jbyteArray jba = (*env)->NewByteArray(env, passwordLen);
 
 
-    (*env)->SetByteArrayRegion(env, jba, 0, passwordLen, (const jbyte *) b);
+    (*env)->SetByteArrayRegion(env, jba, 0, passwordLen, (const jbyte *)original);
 
-    (*env)->ReleaseByteArrayElements(env, password_, password, 0);
-    (*env)->ReleaseByteArrayElements(env, key_, key, 0);
+    (*env)->ReleaseByteArrayElements(env, password_, (jbyte *) password, JNI_ABORT);
+    (*env)->ReleaseByteArrayElements(env, key_, (jbyte *) key, JNI_ABORT);
 
     return jba;
 }
 
 
-unsigned char *AES128_ECB_decrypt(uint8 *password, unsigned int password_len, uint8 *key) //解密
+void AES128_ECB_decrypt(uint8 *password, unsigned int password_len, uint8 *key,uint8 *original) //解密
 {
     int i, k = password_len;
-    unsigned char _original[k], _password[k], original[k];
+    unsigned char _original[k], _password[k];//, original[k];
     for (i = 0; i < k; ++i)
         _password[i] = password[i];
-    memset(_original, 0, k);
-    memcpy(_password, password, k);
+    memset(_original, 0, (size_t) k);
+    memcpy(_password, password, (size_t) k);
     for (i = 0; i < (k / 16); ++i) {
         ECB_decrypt(_password + (i * 16), key, _original + (i * 16));
     }
-    memcpy(original, _original, k); //复制函数
-    return _original;
+    memcpy(original, _original, (size_t) k); //复制函数
 }
 
 
@@ -167,10 +184,10 @@ int aes128TextLen(int len) {
     return k;
 }
 
-unsigned char *AES128_ECB_encrypt(uint8 *original, unsigned int original_len, uint8 *key) //加密
+void AES128_ECB_encrypt(uint8 *original, unsigned int original_len, uint8 *key,uint8 *password) //加密
 {
     int i, k = aes128TextLen(original_len);
-    unsigned char _original[k], _password[k], password[k];
+    unsigned char _original[k], _password[k];//, password[k];
     for (i = 0; i < original_len; ++i)
         _original[i] = original[i];
     for (i = original_len; i < k; ++i)
@@ -179,8 +196,8 @@ unsigned char *AES128_ECB_encrypt(uint8 *original, unsigned int original_len, ui
     for (i = 0; i < (k / 16); ++i) {
         ECB_encrypt(_original + (i * 16), key, _password + (i * 16));
     }
-    memcpy(password, _password, k);
-    return _password;
+    memcpy(password, _password, (size_t) k);
+//    return password;
 }
 
 void ECB_decrypt(const uint8 *input, const uint8 *key, uint8 *output) {

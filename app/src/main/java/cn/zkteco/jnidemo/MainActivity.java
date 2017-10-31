@@ -34,15 +34,15 @@ public class MainActivity extends AppCompatActivity {
 
         tv = (TextView) findViewById(R.id.tv);
 
-        initData();
+//        initData();
 
         byte[] p = AES128.aes128_ecb_encrypt(src, src.length, key);
 
 
         System.out.println("------>" + p[0]);
+        System.out.println("------>" + p[1]);
+        System.out.println("------>" + p[2]);
         System.out.println("------>" + p[3]);
-        System.out.println("------>" + p[4]);
-        System.out.println("------>" + p[5]);
 
         byte[] q = AES128.aes128_ecb_decrypt(password, password.length, key);
 
