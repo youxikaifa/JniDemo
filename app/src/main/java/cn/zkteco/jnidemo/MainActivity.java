@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
 
     TextView tv;
@@ -38,21 +40,18 @@ public class MainActivity extends AppCompatActivity {
 
         byte[] p = AES128.aes128_ecb_encrypt(src, src.length, key);
 
-
-        System.out.println("------>" + p[0]);
-        System.out.println("------>" + p[1]);
-        System.out.println("------>" + p[2]);
-        System.out.println("------>" + p[3]);
-
         byte[] q = AES128.aes128_ecb_decrypt(password, password.length, key);
 
+        int intValue = AES128.callAaddB(3,8);
 
-        System.out.println("------>" + q[0]);
-        System.out.println("------>" + q[3]);
-        System.out.println("------>" + q[4]);
-        System.out.println("------>" + q[5]);
+        boolean boolValue = AES128.getBooleanValue(true);
 
-        tv.setText("");
+        char c = AES128.getChar('c');
+
+        Person person = AES128.getPersonInfo(new Person("Jie",123));
+
+        ArrayList<Person> ps = AES128.getListPerson();
+        tv.setText(person.name);
     }
 
     private void initData() {

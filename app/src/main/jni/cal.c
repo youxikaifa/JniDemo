@@ -1,9 +1,6 @@
-#include <jni.h>
 #include <stdio.h>
 #include <string.h>
-//#include <memory.h>
-#include <stdlib.h>
-#include "aes128.h"
+#include "cal.h"
 
 #define Nb 4
 #define Nk 4
@@ -91,73 +88,6 @@ static const uint8 rCon[16] =
          0x6c, 0xd8, 0xab, 0x4d, 0x9a};
 
 
-JNIEXPORT jstring JNICALL
-Java_cn_zkteco_jnidemo_AES128_getStringFromC(JNIEnv *env, jclass type) {
-
-    // TODO
-
-    return (*env)->NewStringUTF(env, "oh,shit！");
-}
-
-JNIEXPORT jbyteArray JNICALL
-Java_cn_zkteco_jnidemo_AES128_aes128_1ecb_1encrypt(JNIEnv *env, jclass type, jbyteArray original_,
-                                                   jint original_len, jbyteArray key_) {
-    unsigned char *original = (unsigned char *) (*env)->GetByteArrayElements(env, original_, NULL);
-    unsigned int originalLen = (unsigned int) original_len;
-    unsigned char *key = (unsigned char *) (*env)->GetByteArrayElements(env, key_, NULL);
-
-    // TODO
-
-    unsigned char *inputO = (unsigned char *) malloc(originalLen);
-    unsigned char *inputK = (unsigned char *) malloc(16); //秘钥长度
-
-    unsigned char *password = (unsigned char *) malloc(originalLen);
-
-    memset(inputO, 0, originalLen);
-    memcpy(inputO, original, originalLen);
-
-    memset(inputK, 0, 16);
-    memcpy(inputK, key, 16);
-
-    AES128_ECB_encrypt(inputO, originalLen, inputK,password);
-
-    (*env)->ReleaseByteArrayElements(env, original_, (jbyte *) original, JNI_ABORT);
-    (*env)->ReleaseByteArrayElements(env, key_, (jbyte *) key, JNI_ABORT);
-
-    //设置返回变量
-    jbyteArray jb = (*env)->NewByteArray(env, originalLen);
-    (*env)->SetByteArrayRegion(env, jb, 0, originalLen, (jbyte*) password);
-
-
-    return jb;
-
-
-
-}
-
-
-JNIEXPORT jbyteArray JNICALL
-Java_cn_zkteco_jnidemo_AES128_aes128_1ecb_1decrypt(JNIEnv *env, jclass type, jbyteArray password_,
-                                                   jint password_len, jbyteArray key_) {
-    unsigned char *password = (unsigned char *) (*env)->GetByteArrayElements(env, password_, NULL);
-    unsigned int passwordLen = (unsigned int) password_len;
-    unsigned char *key = (unsigned char *) (*env)->GetByteArrayElements(env, key_, NULL);
-
-    unsigned char *original = (unsigned char *) malloc(passwordLen);
-    // TODO
-
-    AES128_ECB_decrypt(password, passwordLen, key,original);
-
-    jbyteArray jba = (*env)->NewByteArray(env, passwordLen);
-
-
-    (*env)->SetByteArrayRegion(env, jba, 0, passwordLen, (const jbyte *)original);
-
-    (*env)->ReleaseByteArrayElements(env, password_, (jbyte *) password, JNI_ABORT);
-    (*env)->ReleaseByteArrayElements(env, key_, (jbyte *) key, JNI_ABORT);
-
-    return jba;
-}
 
 
 void AES128_ECB_decrypt(uint8 *password, unsigned int password_len, uint8 *key,uint8 *original) //解密
@@ -172,6 +102,7 @@ void AES128_ECB_decrypt(uint8 *password, unsigned int password_len, uint8 *key,u
         ECB_decrypt(_password + (i * 16), key, _original + (i * 16));
     }
     memcpy(original, _original, (size_t) k); //复制函数
+    // return _original; 不安全 本地变量在函数外会销毁
 }
 
 
@@ -392,9 +323,5 @@ void ECB_encrypt(const uint8 *input, const uint8 *key, uint8 *output) {
     KeyExpansion();
     Cipher();
 }
-
-
-
-
 
 
